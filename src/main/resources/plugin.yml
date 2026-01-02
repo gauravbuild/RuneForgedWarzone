@@ -1,0 +1,13 @@
+name: RuneForgedWarzone
+version: '${project.version}'
+main: com.hasangarh.runeforgedwarzone.RuneForgedWarzone
+api-version: '1.21'
+authors: [ GauravBuilds ]
+depend:
+  - WorldGuard
+description: Warzone plugin for RuneForged Survival by GauravBuilds
+website: https://gaurav-builds.netlify.app
+commands:
+  rfwarzone:
+    description: Reloads the warzone configuration.
+    permission: runeforgedwarzone.admin

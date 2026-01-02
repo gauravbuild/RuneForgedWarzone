@@ -1,0 +1,26 @@
+# ------------------------------------------------------------------
+# RUNEFORGED WARZONE CONFIGURATION
+# ------------------------------------------------------------------
+
+# --- The "Jump to Warzone" Mechanic ---
+# Teleports players when they enter a specific WorldGuard region.
+void-teleport:
+  enabled: true
+  # The name of the region in the spawn world that triggers the drop
+  trigger-region: "warzone"
+  # The command to execute (console). %player% is replaced with player name.
+  command: "essentials:warp warzone %player%"
+  prevent-fall-damage: true
+  sound: "ENTITY_ENDERMAN_TELEPORT"
+
+# --- Warzone Rules ---
+# Protection rules for the Warzone world
+warzone-rules:
+  world-name: "warzone"
+
+  allow-block-break: false
+  allow-block-place: false
+  allow-buckets: false
+  allow-crop-trample: false
+
+  deny-message: "&c&lWARZONE! &7You cannot do that here."
