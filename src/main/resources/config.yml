@@ -24,3 +24,35 @@ warzone-rules:
   allow-crop-trample: false
 
   deny-message: "&c&lWARZONE! &7You cannot do that here."
+
+
+warzone-location:
+  world: "RuneForgedWarzone"
+  x: 0.5
+  y: 100.0
+  z: 0.5
+  yaw: 0.0
+  pitch: 0.0
+
+# NEW: Boss Settings
+boss:
+  interval: 3600 # Seconds (1 Hour)
+  name: "&4&l☠ Rune Guardian ☠"
+  health: 500.0
+  # This section will be filled automatically when you run /warzone setaltar
+  location:
+    world: "world"
+    x: 0
+    y: 0
+    z: 0
+
+supply-drop:
+  enabled: true
+  interval: 1800 # Seconds (30 Mins)
+  despawn-time: 600
+  # The boundaries of your warzone (The box where drops can fall)
+  min-x: -100
+  max-x: 100
+  min-z: -100
+  max-z: 100
+  drop-height: 150
