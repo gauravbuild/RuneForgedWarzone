@@ -4,8 +4,8 @@ import com.hasangarh.runeforgedwarzone.RuneForgedWarzone;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.FallingBlock;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -16,9 +16,7 @@ public class SupplyManager {
 
     private final RuneForgedWarzone plugin;
     private final Random random = new Random();
-
     private Location activeCrateLoc;
-    private boolean isDropping = false;
 
     public SupplyManager(RuneForgedWarzone plugin) {
         this.plugin = plugin;
@@ -26,114 +24,41 @@ public class SupplyManager {
 
     public void startScheduler() {
         int interval = plugin.getConfig().getInt("supply-drop.interval", 1800) * 20;
-
         new BukkitRunnable() {
             @Override
-            public void run() {
-                spawnSupplyDrop();
-            }
+            public void run() { spawnSupplyDrop(); }
         }.runTaskTimer(plugin, interval, interval);
     }
 
     public void spawnSupplyDrop() {
-        if (activeCrateLoc != null) {
-            if (activeCrateLoc.getBlock().getType() == Material.CHEST) {
-                Bukkit.broadcastMessage(ChatColor.RED + "Supply Drop skipped: Previous crate is still unlooted!");
-                return;
-            } else {
-                activeCrateLoc = null;
-            }
-        }
+        FileConfiguration config = plugin.getConfig();
+        int x = random.nextInt(config.getInt("supply-drop.max-x") - config.getInt("supply-drop.min-x")) + config.getInt("supply-drop.min-x");
+        int z = random.nextInt(config.getInt("supply-drop.max-z") - config.getInt("supply-drop.min-z")) + config.getInt("supply-drop.min-z");
+        World world = Bukkit.getWorld(config.getString("warzone-location.world", "world"));
 
-        if (isDropping) return;
-
-        isDropping = true;
-
-        int minX = plugin.getConfig().getInt("supply-drop.min-x");
-        int maxX = plugin.getConfig().getInt("supply-drop.max-x");
-        int minZ = plugin.getConfig().getInt("supply-drop.min-z");
-        int maxZ = plugin.getConfig().getInt("supply-drop.max-z");
-        int y = plugin.getConfig().getInt("supply-drop.drop-height", 150);
-        String worldName = plugin.getConfig().getString("warzone-location.world", "world");
-
-        int x = random.nextInt(maxX - minX + 1) + minX;
-        int z = random.nextInt(maxZ - minZ + 1) + minZ;
-
-        World world = Bukkit.getWorld(worldName);
-        if (world == null) {
-            isDropping = false;
-            return;
-        }
-
-        Location dropLoc = new Location(world, x + 0.5, y, z + 0.5);
-
-        FallingBlock fallingChest = world.spawnFallingBlock(dropLoc, Material.CHEST.createBlockData());
-        fallingChest.setDropItem(false);
-        fallingChest.setMetadata("supply_drop", new FixedMetadataValue(plugin, true));
-
-        Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&',
-                "&b&lSUPPLY DROP &8» &7A crate is falling at &eX:" + x + " Z:" + z + "&7!"));
-
-        for(Player p : Bukkit.getOnlinePlayers()) {
-            p.playSound(p.getLocation(), Sound.ENTITY_WITHER_SPAWN, 0.3f, 2f);
-        }
+        Location loc = new Location(world, x, config.getInt("supply-drop.drop-height", 150), z);
+        FallingBlock fb = world.spawnFallingBlock(loc, Material.CHEST.createBlockData());
+        fb.setMetadata("supply_drop", new FixedMetadataValue(plugin, true));
+        Bukkit.broadcastMessage(ChatColor.AQUA + "Supply Drop falling at X: " + x + " Z: " + z);
     }
 
     public void fillChest(Block block) {
-        isDropping = false;
         if (block.getType() != Material.CHEST) return;
-
-        activeCrateLoc = block.getLocation();
-
         Chest chest = (Chest) block.getState();
+        FileConfiguration loot = plugin.getSupplyRewardsConfig();
 
-        // Loot Table
-        chest.getInventory().addItem(new ItemStack(Material.GOLDEN_APPLE, 2));
-        chest.getInventory().addItem(new ItemStack(Material.DIAMOND, 4));
-        chest.getInventory().addItem(new ItemStack(Material.EXPERIENCE_BOTTLE, 16));
-
-        if (random.nextBoolean()) {
-            if (!block.getWorld().getPlayers().isEmpty()) {
-                // Placeholder for actual Rune (Use API ideally)
-                chest.getInventory().addItem(new ItemStack(Material.NETHER_STAR));
-            }
-        }
-
-        block.getWorld().strikeLightningEffect(block.getLocation());
-        Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&b&lSUPPLY DROP &8» &aThe Crate has landed!"));
-
-        // --- NEW: AUTO DESPAWN TIMER ---
-        int despawnSeconds = plugin.getConfig().getInt("supply-drop.despawn-time", 600); // Default 10 mins
-
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                // Check if this specific chest location is STILL the active one (meaning it wasn't looted/reset)
-                if (activeCrateLoc != null && activeCrateLoc.equals(block.getLocation())) {
-
-                    if (block.getType() == Material.CHEST) {
-                        // Delete it
-                        block.setType(Material.AIR);
-
-                        // Effects
-                        block.getWorld().spawnParticle(Particle.CLOUD, block.getLocation().add(0.5, 0.5, 0.5), 20, 0.5, 0.5, 0.5, 0.1);
-                        block.getWorld().playSound(block.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 1f, 1f);
-
-                        Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&6&lWARZONE &8» &eThe Supply Drop decayed!"));
-                    }
-
-                    // Allow new drops to spawn
-                    resetActiveCrate();
+        if (loot.getConfigurationSection("loot-table.items") != null) {
+            for (String key : loot.getConfigurationSection("loot-table.items").getKeys(false)) {
+                if (random.nextDouble() <= loot.getDouble("loot-table.items." + key + ".chance")) {
+                    Material mat = Material.valueOf(loot.getString("loot-table.items." + key + ".material"));
+                    int amt = loot.getInt("loot-table.items." + key + ".amount");
+                    chest.getInventory().addItem(new ItemStack(mat, amt));
                 }
             }
-        }.runTaskLater(plugin, despawnSeconds * 20L); // Convert seconds to ticks
+        }
+        activeCrateLoc = block.getLocation();
+        block.getWorld().strikeLightningEffect(block.getLocation());
     }
 
-    public Location getActiveCrateLoc() {
-        return activeCrateLoc;
-    }
-
-    public void resetActiveCrate() {
-        this.activeCrateLoc = null;
-    }
+    public void resetActiveCrate() { this.activeCrateLoc = null; }
 }

@@ -137,6 +137,25 @@ public class WarzoneListener implements Listener {
     }
 
     @EventHandler
+    public void onPlayerKill(org.bukkit.event.entity.PlayerDeathEvent event) {
+        Player victim = event.getEntity();
+        Player killer = victim.getKiller();
+
+        String warzoneWorld = plugin.getConfig().getString("warzone-rules.world-name");
+
+        if (victim.getWorld().getName().equals(warzoneWorld)) {
+            // Handle Bounty Claim and streak reset
+            plugin.getBountyManager().handleDeath(victim, killer);
+
+            // Add streak to killer
+            if (killer != null) {
+                plugin.getBountyManager().addKill(killer);
+                // ajLeaderboards hook: This is where you'd increment your custom kill stat
+            }
+        }
+    }
+
+    @EventHandler
     public void onPlace(BlockPlaceEvent event) {
         if (event.getPlayer().hasPermission("runeforgedwarzone.bypass")) return;
         if (isWarzone(event.getPlayer()) && !plugin.getConfig().getBoolean("warzone-rules.allow-block-place")) {

@@ -1,0 +1,12 @@
+# Items found inside the falling crates
+loot-table:
+  items:
+    - material: GOLDEN_APPLE
+      amount: 2
+      chance: 1.0
+    - material: DIAMOND
+      amount: 4
+      chance: 0.8
+    - material: NETHERITE_SCRAP
+      amount: 1
+      chance: 0.2

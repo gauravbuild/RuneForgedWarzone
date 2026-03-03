@@ -9,7 +9,7 @@ void-teleport:
   # The name of the region in the spawn world that triggers the drop
   trigger-region: "warzone"
   # The command to execute (console). %player% is replaced with player name.
-  command: "essentials:warp warzone %player%"
+  command: "mvtp warzone %player%"
   prevent-fall-damage: true
   sound: "ENTITY_ENDERMAN_TELEPORT"
 

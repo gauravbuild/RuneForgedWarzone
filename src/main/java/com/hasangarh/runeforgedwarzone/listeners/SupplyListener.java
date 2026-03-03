@@ -26,38 +26,38 @@ public class SupplyListener implements Listener {
     @EventHandler
     public void onLand(EntityChangeBlockEvent event) {
         Entity entity = event.getEntity();
+        // Check if the falling entity is our supply drop
         if (entity instanceof FallingBlock && entity.hasMetadata("supply_drop")) {
-            if (event.getTo() == Material.CHEST) {
-                plugin.getServer().getScheduler().runTask(plugin, () -> supplyManager.fillChest(event.getBlock()));
-            }
+            // Wait one tick to ensure the block has actually placed in the world
+            plugin.getServer().getScheduler().runTask(plugin, () -> {
+                if (event.getBlock().getType() == Material.CHEST) {
+                    supplyManager.fillChest(event.getBlock());
+                }
+            });
         }
     }
 
-    // --- NEW: CLEANUP LOGIC ---
     @EventHandler
     public void onClose(InventoryCloseEvent event) {
         Location activeLoc = supplyManager.getActiveCrateLoc();
         if (activeLoc == null) return;
 
-        // Is this inventory the Supply Crate?
-        if (event.getInventory().getLocation() != null && event.getInventory().getLocation().equals(activeLoc)) {
+        // Check if the closed inventory belongs to the active supply crate
+        if (event.getInventory().getLocation() != null &&
+                event.getInventory().getLocation().getBlock().getLocation().equals(activeLoc.getBlock().getLocation())) {
 
-            // Is it empty? (Looted)
+            // If the chest is now empty, despawn it
             if (event.getInventory().isEmpty()) {
-                // DELETE IT
                 activeLoc.getBlock().setType(Material.AIR);
 
-                // Effects
                 activeLoc.getWorld().playSound(activeLoc, Sound.BLOCK_CHEST_CLOSE, 1f, 0.5f);
-                activeLoc.getWorld().spawnParticle(org.bukkit.Particle.CLOUD, activeLoc.add(0.5, 0.5, 0.5), 15, 0.5, 0.5, 0.5, 0.1);
+                activeLoc.getWorld().spawnParticle(org.bukkit.Particle.CLOUD, activeLoc.clone().add(0.5, 0.5, 0.5), 15, 0.5, 0.5, 0.5, 0.1);
 
-                // Reset Tracker so new one can spawn
                 supplyManager.resetActiveCrate();
             }
         }
     }
 
-    // Safety: If they break it manually
     @EventHandler
     public void onBreak(BlockBreakEvent event) {
         Location activeLoc = supplyManager.getActiveCrateLoc();

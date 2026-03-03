@@ -1,19 +1,17 @@
 name: RuneForgedWarzone
-version: '${project.version}'
+version: '1.0'
 main: com.hasangarh.runeforgedwarzone.RuneForgedWarzone
 api-version: '1.21'
-authors: [ GauravBuilds ]
+authors: [zVortexLabs]
 depend:
   - WorldGuard
   - RuneForgedRunes
 description: Warzone plugin for RuneForged Survival by GauravBuilds
-website: https://gaurav-builds.netlify.app
 commands:
-  rfwarzone:
-    description: Reloads the warzone configuration.
-    permission: runeforgedwarzone.admin
-
   warzone:
-    description: Admin commands for the Warzone (Boss/Supply Drops)
-    usage: /warzone <spawnboss|drop>
+    description: Main warzone admin command.
     permission: warzone.admin
+    usage: /warzone <setaltar|spawnboss|drop>
+  bounty:
+    description: View or set bounties on players.
+    usage: /bounty [player] [amount]

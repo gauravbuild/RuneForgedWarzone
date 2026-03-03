@@ -1,0 +1,16 @@
+# ------------------------------------------------------------------
+# BOUNTY & KILLSTREAK SETTINGS
+# ------------------------------------------------------------------
+
+settings:
+  min-manual-bounty: 100
+  broadcast-interval: 1200 # Ticks (60 seconds)
+  tracker-update-interval: 10 # Ticks (0.5 seconds)
+
+killstreaks:
+  '3':
+    bounty-add: 500.0
+    message: "&6&lWARZONE &8» &e%player% is on a &c3 killstreak! &6500 Aether &ebounty added!"
+  '5':
+    bounty-add: 1000.0
+    message: "&6&lWARZONE &8» &e%player% is on a &c5 killstreak! &61000 Aether &ebounty added!"

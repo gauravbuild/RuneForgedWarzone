@@ -1,0 +1,10 @@
+# Rewards given to the top damager and participants
+rewards:
+  killer:
+    commands:
+      - "eco give %player% 5000"
+      - "msg %player% &aYou received 5,000 Aether for slaying the Guardian!"
+  participation:
+    min-damage: 10.0
+    commands:
+      - "give %player% diamond 2"
